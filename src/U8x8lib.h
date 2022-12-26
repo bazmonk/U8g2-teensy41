@@ -161,6 +161,9 @@ extern "C" uint8_t u8x8_byte_arduino_3wire_sw_spi(u8x8_t *u8x8, uint8_t msg, uin
 extern "C" uint8_t u8x8_byte_arduino_3wire_hw_spi(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 extern "C" uint8_t u8x8_byte_arduino_hw_spi(u8x8_t *u8g2, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 extern "C" uint8_t u8x8_byte_arduino_2nd_hw_spi(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr); /* #244 */
+// BAZ
+extern "C" uint8_t u8x8_byte_arduino_3rd_hw_spi(u8x8_t *u8g2, uint8_t msg, uint8_t arg_int, void *arg_ptr);
+// BAZ
 extern "C" uint8_t u8x8_byte_arduino_sw_i2c(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 extern "C" uint8_t u8x8_byte_arduino_hw_i2c(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 extern "C" uint8_t u8x8_byte_arduino_2nd_hw_i2c(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);

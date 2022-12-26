@@ -1085,6 +1085,126 @@ extern "C" uint8_t u8x8_byte_arduino_2nd_hw_spi(U8X8_UNUSED u8x8_t *u8x8, U8X8_U
   return 1;
 }
 
+// BAZ
+extern "C" uint8_t u8x8_byte_arduino_3rd_hw_spi(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr)
+{
+#ifdef U8X8_HAVE_HW_SPI
+  uint8_t *data;
+  uint8_t internal_spi_mode;
+
+  switch(msg)
+  {
+    case U8X8_MSG_BYTE_SEND:
+
+      // 1.6.5 offers a block transfer, but the problem is, that the
+      // buffer is overwritten with the incoming data
+      // so it can not be used...
+      // SPI.transfer((uint8_t *)arg_ptr, arg_int);
+
+      data = (uint8_t *)arg_ptr;
+      while( arg_int > 0 )
+      {
+	SPI2.transfer((uint8_t)*data);
+	data++;
+	arg_int--;
+      }
+
+      break;
+    case U8X8_MSG_BYTE_INIT:
+      if ( u8x8->bus_clock == 0 ) 	/* issue 769 */
+	u8x8->bus_clock = u8x8->display_info->sck_clock_hz;
+      /* disable chipselect */
+      u8x8_gpio_SetCS(u8x8, u8x8->display_info->chip_disable_level);
+
+      /* no wait required here */
+
+      /* for SPI: setup correct level of the clock signal */
+      // removed, use SPI.begin() instead: pinMode(11, OUTPUT);
+      // removed, use SPI.begin() instead: pinMode(13, OUTPUT);
+      // removed, use SPI.begin() instead: digitalWrite(13, u8x8_GetSPIClockPhase(u8x8));
+
+      /* setup hardware with SPI.begin() instead of previous digitalWrite() and pinMode() calls */
+
+
+      /* issue #377 */
+      /* issue #378: removed ESP8266 support, which is implemented differently */
+#if defined(ESP_PLATFORM) || defined(ARDUINO_ARCH_ESP32)
+      /* ESP32 has the following begin: SPI.begin(int8_t sck=SCK, int8_t miso=MISO, int8_t mosi=MOSI, int8_t ss=-1); */
+      /* not sure about ESP8266 */
+      if ( u8x8->pins[U8X8_PIN_I2C_CLOCK] != U8X8_PIN_NONE && u8x8->pins[U8X8_PIN_I2C_DATA] != U8X8_PIN_NONE )
+      {
+	/* SPI.begin(int8_t sck=SCK, int8_t miso=MISO, int8_t mosi=MOSI, int8_t ss=-1); */
+	/* actually MISO is not used, but what else could be used here??? */
+	SPI2.begin(u8x8->pins[U8X8_PIN_I2C_CLOCK], MISO, u8x8->pins[U8X8_PIN_I2C_DATA]);
+      }
+      else
+      {
+	SPI2.begin();
+      }
+#else
+      SPI2.begin();
+#endif
+
+
+
+      break;
+
+    case U8X8_MSG_BYTE_SET_DC:
+      u8x8_gpio_SetDC(u8x8, arg_int);
+      break;
+
+    case U8X8_MSG_BYTE_START_TRANSFER:
+      /* SPI mode has to be mapped to the mode of the current controller, at least Uno, Due, 101 have different SPI_MODEx values */
+      internal_spi_mode =  0;
+      switch(u8x8->display_info->spi_mode)
+      {
+	case 0: internal_spi_mode = SPI_MODE0; break;
+	case 1: internal_spi_mode = SPI_MODE1; break;
+	case 2: internal_spi_mode = SPI_MODE2; break;
+	case 3: internal_spi_mode = SPI_MODE3; break;
+      }
+
+#if ARDUINO >= 10600
+      SPI2.beginTransaction(SPISettings(u8x8->bus_clock, MSBFIRST, internal_spi_mode));
+#else
+      SPI2.begin();
+
+      if ( u8x8->display_info->sck_pulse_width_ns < 70 )
+	SPI2.setClockDivider( SPI_CLOCK_DIV2 );
+      else if ( u8x8->display_info->sck_pulse_width_ns < 140 )
+	SPI2.setClockDivider( SPI_CLOCK_DIV4 );
+      else
+	SPI2.setClockDivider( SPI_CLOCK_DIV8 );
+      SPI2.setDataMode(internal_spi_mode);
+      SPI2.setBitOrder(MSBFIRST);
+#endif
+
+      u8x8_gpio_SetCS(u8x8, u8x8->display_info->chip_enable_level);
+      u8x8->gpio_and_delay_cb(u8x8, U8X8_MSG_DELAY_NANO, u8x8->display_info->post_chip_enable_wait_ns, NULL);
+      break;
+
+    case U8X8_MSG_BYTE_END_TRANSFER:
+      u8x8->gpio_and_delay_cb(u8x8, U8X8_MSG_DELAY_NANO, u8x8->display_info->pre_chip_disable_wait_ns, NULL);
+      u8x8_gpio_SetCS(u8x8, u8x8->display_info->chip_disable_level);
+
+#if ARDUINO >= 10600
+      SPI2.endTransaction();
+#else
+      SPI2.end();
+#endif
+
+      break;
+    default:
+      return 0;
+  }
+
+#else	/* U8X8_HAVE_HW_SPI */
+
+#endif	/* U8X8_HAVE_HW_SPI */
+  return 1;
+}
+// BAZ
+
 /*=============================================*/
 /* fast SW I2C for AVR uC */
 
