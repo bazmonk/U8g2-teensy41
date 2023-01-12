@@ -1,6 +1,6 @@
 # U8g2-teensy41 
 
-U8g2-teensy41 is a repo to hold my simple edits to enable SPI2 support on Teensy4.1, and possibly my future edits to make these changes upstream-worthy.
+U8g2-teensy41 is a repository to hold my simple edits to enable SPI2 support on Teensy4.1, and possibly my future edits to make these changes upstream-worthy.
 
 Users are urged to stick with the original U8g2 repository for the latest version and support unless you need this specific SPI2 support as well.  I'm just tweaking some constructors to use the `SPI2` object instead of `SPI` so I can plug the screen into different pins.
 
